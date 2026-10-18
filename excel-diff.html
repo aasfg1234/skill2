@@ -628,10 +628,16 @@ button.chip:hover{background:var(--hover);filter:none}
 td.fm{outline:1px dashed var(--clay);outline-offset:-2px}
 .fx-why.fm::before{content:"◧ " / ""}
 .sw{display:inline-block;width:.85em;height:.85em;border:1px solid var(--line-strong);border-radius:2px;vertical-align:-.1em;margin-right:3px}
-.fmt-btn{padding:4px 12px;min-height:34px;border-radius:9px}
-.fmt-btn[aria-pressed="true"]{background:var(--clay);border-color:var(--clay);color:var(--accent-ink);font-weight:600}
-#resultBar .fmt-btn[aria-pressed="true"]{background:var(--clay);border-color:var(--clay);color:var(--accent-ink)}
+/* an on/off switch, drawn unlike the segmented choice beside it: a small box that gets a tick, a tinted (not filled) pill */
+.what-pick{align-items:stretch}
+.what-pick .fmt-btn{align-self:stretch;min-height:0;padding:0 12px 0 9px;border-radius:9px;gap:6px;color:var(--soft)}
+.fmt-ic{display:inline-block;width:14px;height:14px;border:1.5px solid currentColor;border-radius:3px;flex:none}
+.fmt-btn[aria-pressed="true"]{background:var(--peach);border-color:var(--clay);color:var(--clay-text);font-weight:600}
+#resultBar .fmt-btn[aria-pressed="true"]{background:var(--peach);border-color:var(--clay);color:var(--clay-text)}
+.fmt-btn[aria-pressed="true"] .fmt-ic{background:var(--clay) var(--ic-tick) center/10px 10px no-repeat;border-color:var(--clay)}
 .fmt-btn:disabled{opacity:.5}
+:root{--ic-tick:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><path d='M2.5 6.5 5 9l4.5-6' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>")}
+@media (forced-colors: active){ .fmt-btn[aria-pressed="true"]{forced-color-adjust:none;background:Highlight;color:HighlightText} .fmt-ic{border-color:currentColor} }
 /* formulas in words: the sentence under a changed cell, the tint on formula cells, the popup's formula bar */
 .fx-why{display:block;margin-top:3px;font-size:.8rem;line-height:1.45;color:var(--soft);font-style:normal;text-decoration:none;overflow-wrap:anywhere}
 .fx-why::before{content:"↳ " / "";color:var(--clay-text)}
@@ -796,7 +802,7 @@ td.hf{background:color-mix(in srgb,var(--slate-wash) 60%,transparent)}
     <p class="sheets-hint">已經照名字自動配好。要換就改那一列的「新版 B」選單；要照某一欄（例如編號）對應就改「列的對應方式」。表頭不在第 1 列時會自動判斷，想手動指定就打開「顯示表頭設定」。</p>
     <p class="restored" id="restoredNote" hidden>已套用上次這兩個檔案的配對設定。<button id="resetPairBtn" class="btn">改回自動配對</button></p>
     <div class="pair-groups" id="pairList"></div>
-    <div class="pair-foot"><span class="what-pick"><span class="what-label">比較</span><span class="tabs" role="group" aria-label="比較內容：值、公式，或兩種都比"><button type="button" class="what-btn" id="whatPValue" data-what="value" aria-pressed="true">值</button><button type="button" class="what-btn" id="whatPFormula" data-what="formula" aria-pressed="false">公式</button><button type="button" class="what-btn" id="whatPBoth" data-what="both" aria-pressed="false">都比</button></span><button type="button" class="btn fmt-btn" id="fmtP" aria-pressed="false">格式</button></span><span class="busy" id="startBusy" hidden>比對中…</span><span class="start-hint" id="startHint" hidden>至少勾選一個工作表才能開始比對</span><button id="startBtn" class="btn primary" aria-describedby="startHint" disabled>開始比對</button></div>
+    <div class="pair-foot"><span class="what-pick"><span class="what-label">比較</span><span class="tabs" role="group" aria-label="比較內容：值、公式，或兩種都比"><button type="button" class="what-btn" id="whatPValue" data-what="value" aria-pressed="true">值</button><button type="button" class="what-btn" id="whatPFormula" data-what="formula" aria-pressed="false">公式</button><button type="button" class="what-btn" id="whatPBoth" data-what="both" aria-pressed="false">都比</button></span><button type="button" class="btn fmt-btn" id="fmtP" aria-pressed="false"><span class="fmt-ic" aria-hidden="true"></span>格式</button></span><span class="busy" id="startBusy" hidden>比對中…</span><span class="start-hint" id="startHint" hidden>至少勾選一個工作表才能開始比對</span><button id="startBtn" class="btn primary" aria-describedby="startHint" disabled>開始比對</button></div>
   </section>
 
   <input type="checkbox" id="optFmt" hidden aria-hidden="true">
@@ -827,7 +833,7 @@ td.hf{background:color-mix(in srgb,var(--slate-wash) 60%,transparent)}
         <button id="tabList" aria-pressed="true">差異清單</button>
         <button id="tabGrid" aria-pressed="false">並排表格</button>
       </div>
-      <span class="what-pick"><span class="what-label">比較</span><span class="tabs" role="group" aria-label="比較內容：值、公式，或兩種都比"><button type="button" class="what-btn" id="whatRValue" data-what="value" aria-pressed="true">值</button><button type="button" class="what-btn" id="whatRFormula" data-what="formula" aria-pressed="false">公式</button><button type="button" class="what-btn" id="whatRBoth" data-what="both" aria-pressed="false">都比</button></span><button type="button" class="btn fmt-btn" id="fmtR" aria-pressed="false">格式</button></span>
+      <span class="what-pick"><span class="what-label">比較</span><span class="tabs" role="group" aria-label="比較內容：值、公式，或兩種都比"><button type="button" class="what-btn" id="whatRValue" data-what="value" aria-pressed="true">值</button><button type="button" class="what-btn" id="whatRFormula" data-what="formula" aria-pressed="false">公式</button><button type="button" class="what-btn" id="whatRBoth" data-what="both" aria-pressed="false">都比</button></span><button type="button" class="btn fmt-btn" id="fmtR" aria-pressed="false"><span class="fmt-ic" aria-hidden="true"></span>格式</button></span>
       <label class="chk" id="onlyWrap" hidden><input type="checkbox" id="optOnlyDiff" checked>只顯示有差異的列</label>
       <span class="sheet-nav" id="sheetPickWrap" hidden>
         <button type="button" class="btn nav-step" id="prevSheet" aria-label="上一個工作表" title="上一個工作表"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
