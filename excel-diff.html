@@ -549,7 +549,7 @@ select{appearance:none;-webkit-appearance:none;padding:4px 28px 4px 10px;min-hei
 .tabs button{border-radius:7px;padding:4px 13px;min-height:28px;color:var(--ink)}
 .tabs button + button{border-left:0}
 .tabs button:hover{background:var(--hover)}
-.tabs button[aria-pressed="true"],.what-btn[aria-pressed="true"]{background:var(--clay);color:var(--accent-ink);font-weight:600}
+.tabs button[aria-pressed="true"]{background:var(--clay);color:var(--accent-ink);font-weight:600}
 .tabs button:disabled{color:var(--soft);opacity:.55}
 .what-label{color:var(--soft)}
 .hint::before{content:"" / "";display:inline-block;width:14px;height:14px;margin-right:5px;vertical-align:-2px;background:var(--clay);-webkit-mask:var(--ic-info) center/contain no-repeat;mask:var(--ic-info) center/contain no-repeat}
@@ -628,16 +628,11 @@ button.chip:hover{background:var(--hover);filter:none}
 td.fm{outline:1px dashed var(--clay);outline-offset:-2px}
 .fx-why.fm::before{content:"◧ " / ""}
 .sw{display:inline-block;width:.85em;height:.85em;border:1px solid var(--line-strong);border-radius:2px;vertical-align:-.1em;margin-right:3px}
-/* an on/off switch, drawn unlike the segmented choice beside it: a small box that gets a tick, a tinted (not filled) pill */
-.what-pick{align-items:stretch}
-.what-pick .fmt-btn{align-self:stretch;min-height:0;padding:0 12px 0 9px;border-radius:9px;gap:6px;color:var(--soft)}
-.fmt-ic{display:inline-block;width:14px;height:14px;border:1.5px solid currentColor;border-radius:3px;flex:none}
-.fmt-btn[aria-pressed="true"]{background:var(--peach);border-color:var(--clay);color:var(--clay-text);font-weight:600}
-#resultBar .fmt-btn[aria-pressed="true"]{background:var(--peach);border-color:var(--clay);color:var(--clay-text)}
-.fmt-btn[aria-pressed="true"] .fmt-ic{background:var(--clay) var(--ic-tick) center/10px 10px no-repeat;border-color:var(--clay)}
-.fmt-btn:disabled{opacity:.5}
-:root{--ic-tick:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><path d='M2.5 6.5 5 9l4.5-6' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>")}
-@media (forced-colors: active){ .fmt-btn[aria-pressed="true"]{forced-color-adjust:none;background:Highlight;color:HighlightText} .fmt-ic{border-color:currentColor} }
+/* 值｜公式｜格式: three lights in one group; any number may be on, a lit one is filled */
+.tabs.multi .cmp-btn[aria-pressed="true"]{background:var(--clay);color:var(--accent-ink);font-weight:600}
+.tabs.multi .cmp-btn[aria-pressed="true"] + .cmp-btn[aria-pressed="true"]{margin-left:2px}
+.tabs.multi .cmp-btn:disabled{color:var(--soft);opacity:.5}
+@media (forced-colors: active){ .tabs.multi .cmp-btn[aria-pressed="true"]{forced-color-adjust:none;background:Highlight;color:HighlightText} }
 /* formulas in words: the sentence under a changed cell, the tint on formula cells, the popup's formula bar */
 .fx-why{display:block;margin-top:3px;font-size:.8rem;line-height:1.45;color:var(--soft);font-style:normal;text-decoration:none;overflow-wrap:anywhere}
 .fx-why::before{content:"↳ " / "";color:var(--clay-text)}
@@ -802,11 +797,11 @@ td.hf{background:color-mix(in srgb,var(--slate-wash) 60%,transparent)}
     <p class="sheets-hint">已經照名字自動配好。要換就改那一列的「新版 B」選單；要照某一欄（例如編號）對應就改「列的對應方式」。表頭不在第 1 列時會自動判斷，想手動指定就打開「顯示表頭設定」。</p>
     <p class="restored" id="restoredNote" hidden>已套用上次這兩個檔案的配對設定。<button id="resetPairBtn" class="btn">改回自動配對</button></p>
     <div class="pair-groups" id="pairList"></div>
-    <div class="pair-foot"><span class="what-pick"><span class="what-label">比較</span><span class="tabs" role="group" aria-label="比較內容：值、公式，或兩種都比"><button type="button" class="what-btn" id="whatPValue" data-what="value" aria-pressed="true">值</button><button type="button" class="what-btn" id="whatPFormula" data-what="formula" aria-pressed="false">公式</button><button type="button" class="what-btn" id="whatPBoth" data-what="both" aria-pressed="false">都比</button></span><button type="button" class="btn fmt-btn" id="fmtP" aria-pressed="false"><span class="fmt-ic" aria-hidden="true"></span>格式</button></span><span class="busy" id="startBusy" hidden>比對中…</span><span class="start-hint" id="startHint" hidden>至少勾選一個工作表才能開始比對</span><button id="startBtn" class="btn primary" aria-describedby="startHint" disabled>開始比對</button></div>
+    <div class="pair-foot"><span class="what-pick"><span class="what-label">比較</span><span class="tabs multi" role="group" aria-label="要比什麼：值、公式、格式，可以同時亮好幾個"><button type="button" class="cmp-btn" id="cmpPValue" data-cmp="value" aria-pressed="true">值</button><button type="button" class="cmp-btn" id="cmpPFormula" data-cmp="formula" aria-pressed="false">公式</button><button type="button" class="cmp-btn" id="cmpPFmt" data-cmp="fmt" aria-pressed="false">格式</button></span></span><span class="busy" id="startBusy" hidden>比對中…</span><span class="start-hint" id="startHint" hidden>至少勾選一個工作表才能開始比對</span><button id="startBtn" class="btn primary" aria-describedby="startHint" disabled>開始比對</button></div>
   </section>
 
   <input type="checkbox" id="optFmt" hidden aria-hidden="true">
-  <select id="optWhat" hidden aria-hidden="true"><option value="value">只比值</option><option value="formula">只比公式</option><option value="both">值和公式都比</option></select>
+  <select id="optWhat" hidden aria-hidden="true"><option value="value">只比值</option><option value="formula">只比公式</option><option value="both">值和公式都比</option><option value="none">值和公式都不比</option></select>
   <div class="result-step" id="resultStep" hidden>
   <div class="step-bar"><h2 id="resultTitle" tabindex="-1" class="sr-only">比對結果</h2><span class="file-line"><span class="tag tag-a">舊版 A</span><span class="fname" id="rnameA"></span><span class="arrow" aria-hidden="true">→</span><span class="tag tag-b">新版 B</span><span class="fname" id="rnameB"></span></span><span id="pairInfo"></span><span class="busy" id="resultBusy" hidden>重新比對中…</span><div class="actions"><button id="changeBtn" class="btn">更換檔案</button><button id="backBtn" class="btn">重新配對工作表</button></div></div>
 
@@ -833,7 +828,7 @@ td.hf{background:color-mix(in srgb,var(--slate-wash) 60%,transparent)}
         <button id="tabList" aria-pressed="true">差異清單</button>
         <button id="tabGrid" aria-pressed="false">並排表格</button>
       </div>
-      <span class="what-pick"><span class="what-label">比較</span><span class="tabs" role="group" aria-label="比較內容：值、公式，或兩種都比"><button type="button" class="what-btn" id="whatRValue" data-what="value" aria-pressed="true">值</button><button type="button" class="what-btn" id="whatRFormula" data-what="formula" aria-pressed="false">公式</button><button type="button" class="what-btn" id="whatRBoth" data-what="both" aria-pressed="false">都比</button></span><button type="button" class="btn fmt-btn" id="fmtR" aria-pressed="false"><span class="fmt-ic" aria-hidden="true"></span>格式</button></span>
+      <span class="what-pick"><span class="what-label">比較</span><span class="tabs multi" role="group" aria-label="要比什麼：值、公式、格式，可以同時亮好幾個"><button type="button" class="cmp-btn" id="cmpRValue" data-cmp="value" aria-pressed="true">值</button><button type="button" class="cmp-btn" id="cmpRFormula" data-cmp="formula" aria-pressed="false">公式</button><button type="button" class="cmp-btn" id="cmpRFmt" data-cmp="fmt" aria-pressed="false">格式</button></span></span>
       <label class="chk" id="onlyWrap" hidden><input type="checkbox" id="optOnlyDiff" checked>只顯示有差異的列</label>
       <span class="sheet-nav" id="sheetPickWrap" hidden>
         <button type="button" class="btn nav-step" id="prevSheet" aria-label="上一個工作表" title="上一個工作表"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -1596,13 +1591,13 @@ function compareGrids(gA, gB, o){
   const items=pairs.map(([i,j])=>{
     if (i<0) return {t:'add',i,j};
     if (j<0) return {t:'del',i,j};
-    const d=[]; if (what!=='formula') for (const k of shared) if (nA[i][k]!==nB[j][k]) d.push(k);
+    const d=[]; if (what==='value' || what==='both') for (const k of shared) if (nA[i][k]!==nB[j][k]) d.push(k);
     return {t:d.length?'mod':'same',i,j,d:new Set(d)};
   });
   // formulas of matched rows: changed, turned into a fixed value, or a fixed value turned into a formula (it.fd: column → kind)
   // the translator is kept on the result: the views use it to show references in the new sheet's numbering
   const movedRows = hasFx ? formulaTranslator(A, B, cols, items, useHeader) : null; let fxRules=[];
-  if (what!=='value' && hasFx){
+  if ((what==='formula' || what==='both') && hasFx){
     const moved=movedRows;
     for (const it of items){
       if (it.i<0 || it.j<0 || !((A.f && A.f[it.i]) || (B.f && B.f[it.j]))) continue;
@@ -1864,12 +1859,13 @@ function renderSummary(res){
   if (res.info.dups) t+=` <span class="warn">注意：「${esc(res.info.keyName)}」欄有 ${res.info.dups} 個值重複出現，重複的會照順序配對。</span>`;
   if (res.info.keyMissing) t+=` <span class="warn">注意：設定依「${esc(res.info.keyMissing)}」對應，但兩邊沒有共同的這一欄，改用自動對齊。</span>`;
   if (res.info.blank) t+=` <span class="warn">注意：有 ${res.info.blank} 列的「${esc(res.info.keyName)}」是空白，沒辦法配對，會當成新增或刪除的列。</span>`;
-  if (res.what!=='value' && !res.A.f && !res.B.f) t+=` <span class="warn">這個工作表兩邊都沒有公式（CSV 檔也不會有），所以只比得到值。</span>`;
+  if ((res.what==='formula' || res.what==='both') && !res.A.f && !res.B.f) t+=` <span class="warn">這個工作表兩邊都沒有公式（CSV 檔也不會有），所以比不到公式。</span>`;
+  if (res.what==='none' && !res.fmt) t+=` <span class="warn">值、公式、格式都沒有亮，所以什麼都沒比；請在上面把要比的點亮。</span>`;
   if (res.A.f || res.B.f) t+=' 並排表格裡淡藍底的格子是公式算出來的。';
   if (res.fmt && !res.A.hasFmt && !res.B.hasFmt) t+=` <span class="warn">這兩個檔案讀不到格式（只有 .xlsx／.xlsm 檔能比底色、字體、數字格式這些格式），所以格式沒有比。</span>`;
   else if (res.fmt) t+=' 格式也比了：底色、字體、數字格式、框線、對齊；虛線框的格子是格式不一樣的。';
   const noCache=(res.A.noCache||0)+(res.B.noCache||0);
-  if (res.what==='value' && noCache) t+=` <span class="warn">注意：有 ${noCache} 格公式沒有存算出來的值（用程式產生、沒用 Excel 開過存過的檔案會這樣），這裡會當成空白。想比公式本身，把「比較內容」改成「只比公式」或「值和公式都比」。</span>`;
+  if (res.what==='value' && noCache) t+=` <span class="warn">注意：有 ${noCache} 格公式沒有存算出來的值（用程式產生、沒用 Excel 開過存過的檔案會這樣），這裡會當成空白。想比公式本身，想比公式本身，把上面的「公式」點亮。</span>`;
   if (res.info.fallback) t+=` <span class="warn">兩個檔案差太多，自動對齊改成照列的位置一列對一列。可以把「列的對應方式」改成依某一欄對應。</span>`;
   cmp.innerHTML=t; cmp.hidden=false;
 }
@@ -2619,19 +2615,22 @@ function booksHaveFormulas(){
 }
 // formats can be read from both files (.xlsx/.xlsm): then the 格式 switch can be turned on
 const booksHaveStyles = () => !!(books.A && books.B && books.A.wb.fmt && books.B.wb.fmt);
+// the three lights as flags: 值 and 公式 live in the hidden <select> (value / formula / both / none), 格式 in its box
+const cmpFlags=()=>{ const w=$('optWhat').value; return {value:w==='value'||w==='both', formula:w==='formula'||w==='both', fmt:$('optFmt').checked}; };
+function setCmpFlags(f){ $('optWhat').value = f.value && f.formula ? 'both' : f.value ? 'value' : f.formula ? 'formula' : 'none'; $('optFmt').checked=!!f.fmt; }
 function syncWhat(){
-  const hasS=booksHaveStyles(), fmtOn=$('optFmt').checked && hasS;
-  document.querySelectorAll('.fmt-btn').forEach(b=>{
-    b.setAttribute('aria-pressed', fmtOn ? 'true' : 'false'); b.disabled=!hasS;
-    b.title = !hasS ? '只有 .xlsx／.xlsm 檔讀得到格式（兩個檔案都要是）' : fmtOn ? '格式也比：底色、字體、數字格式、框線、對齊（再點一下關掉）' : '也比儲存格格式：底色、字體、數字格式、框線、對齊';
-  });
-  const sel=$('optWhat'), hasF=booksHaveFormulas();
-  if (!hasF && sel.value!=='value') sel.value='value';
-  document.querySelectorAll('.what-btn').forEach(b=>{
-    const v=b.dataset.what, off=v!=='value' && !hasF;
-    b.setAttribute('aria-pressed', sel.value===v ? 'true' : 'false');
+  const hasF=booksHaveFormulas(), hasS=booksHaveStyles(), f=cmpFlags();
+  // a light that cannot be on with these files goes out; with nothing left on, 值 comes back on
+  if (!hasF && f.formula) f.formula=false;
+  if (!hasS && f.fmt) f.fmt=false;
+  if (!f.value && !f.formula && !f.fmt) f.value=true;
+  setCmpFlags(f);
+  const TIP={value:'比儲存格算出來的值', formula:'比公式本身；插入列造成的位移不算修改', fmt:'比格式：底色、字體、數字格式、框線、對齊'};
+  document.querySelectorAll('.cmp-btn').forEach(b=>{
+    const v=b.dataset.cmp, off = v==='formula' ? !hasF : v==='fmt' ? !hasS : false;
+    b.setAttribute('aria-pressed', f[v] ? 'true' : 'false');
     b.disabled=off;
-    b.title = off ? '這兩個檔案裡沒有公式（CSV 檔也不會有）' : v==='value' ? '只比儲存格算出來的值' : v==='formula' ? '只比公式本身；插入列造成的位移不算修改' : '值和公式都比';
+    b.title = off ? (v==='formula' ? '這兩個檔案裡沒有公式（CSV 檔也不會有）' : '只有 .xlsx／.xlsm 檔讀得到格式（兩個檔案都要是）') : TIP[v]+(f[v] ? '（亮著：再點一下關掉）' : '（點一下點亮）');
   });
 }
 function render(){
@@ -2659,7 +2658,7 @@ function render(){
   if (viewAll) $('colMatch').hidden=true; else renderColMatch(last);
   viewAll ? renderSummaryAll() : renderSummary(last);
   // the closed settings bar says what is in force, so it rarely needs opening
-  $('settingsSum').textContent=[$('optFmt').checked && booksHaveStyles() && '格式也比', !viewAll && (last.mode==='key' ? `依「${last.info.keyName}」對應` : '自動對齊'),
+  $('settingsSum').textContent=[`比${[cmpFlags().value&&'值', cmpFlags().formula&&'公式', cmpFlags().fmt&&'格式'].filter(Boolean).join('、')}`, !viewAll && (last.mode==='key' ? `依「${last.info.keyName}」對應` : '自動對齊'),
     $('optHeader').checked ? '第一列是標題' : '沒有標題列', $('optTrim').checked && '忽略前後空白', $('optCase').checked && '忽略英文大小寫'].filter(Boolean).join('・');
   $('copyBtn').querySelector('.lbl').textContent = overviewData && overviewData.rows.length>1 ? '複製差異清單（全部工作表）' : '複製差異清單'; // the icon stays
   const hidden = view==='grid' ? (viewAll ? renderGridAll() : renderGrid(last)) : (viewAll ? renderListAll() : renderList(last));
@@ -2917,7 +2916,7 @@ function loadPrefs(){
     const p=JSON.parse(localStorage.getItem(PREF_KEY) || 'null');
     if (!p) return null;
     $('optHeader').checked=!!p.header; $('optTrim').checked=!!p.trim; $('optCase').checked=!!p.lower;
-    if (['value','formula','both'].includes(p.what)) $('optWhat').value=p.what;
+    if (['value','formula','both','none'].includes(p.what)) $('optWhat').value=p.what;
     $('optFmt').checked=p.fmt===true;
     $('optOnlyDiff').checked=p.only!==false; $('optShowPos').checked=p.pos!==false; $('optHdrPick').checked=p.hdrPick===true;
     $('settingsBox').open=p.settingsOpen===true; $('colMatch').open=p.colsOpen===true;
@@ -3247,19 +3246,15 @@ function wireResults(){
   $('backBtn').addEventListener('click',()=>{ if (fullMode) setFull(false); phase='pair'; run(); $('pairTitle').focus(); });
   $('changeBtn').addEventListener('click',()=>{ if (fullMode) setFull(false); phase='pair'; run(); $('fileA').focus(); });
   for (const id of ['optWhat','optFmt','optHeader','optTrim','optCase']) $(id).addEventListener('change', ()=>rerun());
-  // the 格式 switch (step 2 and the toolbar) drives the hidden setting
+  // the 值｜公式｜格式 lights (step 2 and the toolbar): each one on or off, at least one stays on
   document.addEventListener('click',e=>{
-    const b=e.target.closest('.fmt-btn'); if (!b || b.disabled) return;
-    const box=$('optFmt'); box.checked=!box.checked; box.dispatchEvent(new Event('change',{bubbles:true}));
-    announce(box.checked ? '格式也比。' : '不比格式。');
-    b.focus();
-  });
-  // the 值｜公式｜都比 buttons (step 2 and the toolbar) drive the hidden setting
-  document.addEventListener('click',e=>{
-    const b=e.target.closest('.what-btn'); if (!b || b.disabled) return;
-    const sel=$('optWhat'); if (sel.value===b.dataset.what) return;
-    sel.value=b.dataset.what; sel.dispatchEvent(new Event('change',{bubbles:true}));
-    announce({value:'改成只比值。', formula:'改成只比公式。', both:'改成值和公式都比。'}[b.dataset.what]);
+    const b=e.target.closest('.cmp-btn'); if (!b || b.disabled) return;
+    const f=cmpFlags(), v=b.dataset.cmp;
+    if (f[v] && !Object.entries(f).some(([k,on])=>k!==v && on)){ announce('至少要留一個亮著。'); b.focus(); return; }
+    f[v]=!f[v]; setCmpFlags(f);
+    $('optWhat').dispatchEvent(new Event('change',{bubbles:true})); // one re-run for both settings
+    const NAME={value:'值', formula:'公式', fmt:'格式'};
+    announce(`${NAME[v]}${f[v] ? '點亮了' : '關掉了'}，現在比：${Object.entries(f).filter(([,on])=>on).map(([k])=>NAME[k]).join('、')}。`);
     b.focus();
   });
   // the result-step picker is redrawn on every render, so listen on its container
