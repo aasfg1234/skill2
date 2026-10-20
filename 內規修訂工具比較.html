@@ -1,0 +1,617 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>內規修訂工具比較</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<style>
+/* 版面概念：一張「紅筆批改過的修正對照表」——深藍墨水的紙面，朱紅批改筆只給 reg；每個工具一種墨色 */
+:root {
+  --paper: #eef1f6;
+  --sheet: #ffffff;
+  --sheet-2: #f6f8fb;
+  --ink: #17203a;
+  --muted: #5b6580;
+  --rule: #d6dce8;
+  --seal: #c0302a;
+  --seal-soft: #fbe7e5;
+  --legal: #3a5bb0;
+  --cmp: #17836f;
+  --grc: #a9700d;
+  --yes: #1d7a4c;
+  --part: #a56a0a;
+  --no: #8d96a8;
+  --glow: rgba(192, 48, 42, .18);
+  --display: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+  --body: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f1320; --sheet: #171d2e; --sheet-2: #1d2438; --ink: #e9ecf4; --muted: #a2abc2; --rule: #2c3550;
+    --seal: #f06a5f; --seal-soft: #3b2023; --legal: #86a6f0; --cmp: #4fc8ad; --grc: #e6b155;
+    --yes: #5dcb92; --part: #e6ad4b; --no: #78829a; --glow: rgba(240, 106, 95, .22); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f1320; --sheet: #171d2e; --sheet-2: #1d2438; --ink: #e9ecf4; --muted: #a2abc2; --rule: #2c3550;
+  --seal: #f06a5f; --seal-soft: #3b2023; --legal: #86a6f0; --cmp: #4fc8ad; --grc: #e6b155;
+  --yes: #5dcb92; --part: #e6ad4b; --no: #78829a; --glow: rgba(240, 106, 95, .22); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 31px, color-mix(in srgb, var(--rule) 45%, transparent) 31px 32px),
+    var(--paper);
+  color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.75; margin: 0;
+}
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 72px; display: grid; gap: 56px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; line-height: 1.3; margin: 0; }
+h2 { font-size: clamp(24px, 3.2vw, 32px); font-weight: 900; }
+h3 { font-size: 18px; font-weight: 600; }
+p { margin: 0; }
+.kicker { font-size: 12.5px; font-weight: 700; letter-spacing: .14em; color: var(--seal); }
+.lede { color: var(--muted); max-width: 64ch; }
+section { display: grid; gap: 20px; }
+.sec-head { display: grid; gap: 6px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--seal); outline-offset: 3px; border-radius: 6px; }
+
+/* ---------- 開頭 ---------- */
+.hero { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 36px; align-items: center; padding-top: 12px; }
+.hero h1 { font-size: clamp(34px, 5.6vw, 60px); font-weight: 900; letter-spacing: .01em; }
+.hero h1 .pen { position: relative; white-space: nowrap; }
+.hero h1 .pen svg { position: absolute; left: -2%; bottom: -10px; width: 104%; height: 18px; overflow: visible; }
+.hero h1 .pen path { fill: none; stroke: var(--seal); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 420; stroke-dashoffset: 0; }
+.hero-copy { display: grid; gap: 18px; }
+.hero-copy .lede { font-size: 17px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; background: var(--sheet); border: 1px solid var(--rule); font-size: 14px; font-weight: 500; }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
+.demo { background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; padding: 20px; display: grid; gap: 14px; box-shadow: 0 18px 40px -24px var(--glow); position: relative; }
+.demo-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.demo-title { font-size: 13px; font-weight: 700; letter-spacing: .1em; color: var(--muted); }
+.replay { border: 1px solid var(--rule); background: var(--sheet-2); border-radius: 999px; padding: 4px 14px; font-size: 13px; }
+.replay:hover { border-color: var(--seal); color: var(--seal); }
+.line { border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px; display: grid; gap: 4px; background: var(--sheet-2); transition: border-color .4s, box-shadow .4s; }
+.line .lab { font-size: 12px; font-weight: 700; letter-spacing: .08em; color: var(--muted); }
+.line .txt { font-family: var(--display); font-size: 17px; line-height: 1.8; }
+.strike { position: relative; color: var(--muted); }
+.strike::after { content: ""; position: absolute; left: -2px; right: -2px; top: 52%; height: 2.5px; background: var(--seal); transform-origin: left; transform: scaleX(1); transition: transform .5s ease; }
+.ins { color: var(--seal); font-weight: 900; text-decoration: underline 2px; text-underline-offset: 4px; display: inline-block; transition: opacity .4s, transform .4s; }
+.found { position: relative; display: inline-block; color: var(--seal); font-weight: 900; }
+.found svg { position: absolute; left: -11px; top: -7px; width: calc(100% + 22px); height: calc(100% + 14px); overflow: visible; pointer-events: none; }
+.found ellipse { fill: none; stroke: var(--seal); stroke-width: 2.5; stroke-dasharray: 120; stroke-dashoffset: 0; transition: stroke-dashoffset .8s ease; }
+.line.hit { border-color: var(--seal); box-shadow: 0 0 0 4px var(--glow); }
+.callout { display: flex; gap: 10px; align-items: flex-start; font-size: 14.5px; color: var(--ink); transition: opacity .4s; }
+.callout b { color: var(--seal); }
+.arrow { font-size: 22px; line-height: 1; color: var(--seal); text-align: center; transition: opacity .4s; }
+/* 播放時：先歸零，再一步一步出現（不播放時就是完成的樣子） */
+.demo.reset .strike::after { transform: scaleX(0); transition: none; }
+.demo.reset .ins { opacity: 0; transform: translateY(-6px); transition: none; }
+.demo.reset .found ellipse { stroke-dashoffset: 120; transition: none; }
+.demo.reset .arrow, .demo.reset .callout { opacity: .15; transition: none; }
+.demo.reset .line.hit { border-color: var(--rule); box-shadow: none; transition: none; }
+
+/* ---------- 結論 ---------- */
+.verdict { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.vcard { background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; padding: 20px; display: grid; gap: 10px; align-content: start; }
+.vcard .big { font-family: var(--display); font-size: 40px; font-weight: 900; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.vcard .big small { font-size: 18px; color: var(--muted); font-weight: 600; }
+.meter { height: 10px; border-radius: 99px; background: var(--sheet-2); border: 1px solid var(--rule); overflow: hidden; }
+.meter i { display: block; height: 100%; border-radius: 99px; }
+.vcard.ours { border-color: var(--seal); box-shadow: inset 0 0 0 1px var(--seal); }
+
+/* ---------- 流程 ---------- */
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.tab { border: 1px solid var(--rule); background: var(--sheet); border-radius: 999px; padding: 7px 16px; font-size: 14.5px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; transition: background .2s, border-color .2s; }
+.tab[aria-pressed="true"] { background: var(--ink); color: var(--sheet); border-color: var(--ink); }
+.track { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 10px; position: relative; }
+.stage { background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; padding: 12px 10px; display: grid; gap: 10px; text-align: left; align-content: start; transition: transform .25s, border-color .25s, box-shadow .25s; min-width: 0; }
+.stage:hover { transform: translateY(-3px); border-color: var(--muted); }
+.stage[aria-expanded="true"] { border-color: var(--ink); box-shadow: 0 10px 24px -16px var(--ink); }
+.stage .n { font-size: 12px; font-weight: 900; color: var(--muted); letter-spacing: .08em; }
+.stage .nm { font-weight: 700; font-size: 14.5px; line-height: 1.45; }
+.lights { display: grid; gap: 5px; }
+.lt { height: 9px; border-radius: 99px; background: var(--sheet-2); border: 1px solid var(--rule); transition: opacity .3s, transform .3s; transform-origin: left; }
+.lt.full { border-color: transparent; }
+.lt.half { border-style: dashed; }
+.track.focus .lt:not(.on) { opacity: .18; }
+.track.focus .lt.on { transform: scaleY(1.35); }
+.detail { background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; padding: 18px 20px; display: grid; gap: 12px; }
+.detail h3 { display: flex; gap: 10px; align-items: baseline; }
+.dgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.dcell { border-radius: 10px; padding: 10px 12px; background: var(--sheet-2); border-left: 4px solid var(--rule); font-size: 14.5px; display: grid; gap: 2px; }
+.dcell b { font-size: 13px; }
+.dcell .st { font-size: 12.5px; font-weight: 700; }
+.legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: var(--muted); align-items: center; }
+.legend i { width: 30px; height: 9px; border-radius: 99px; display: inline-block; vertical-align: middle; margin-right: 6px; border: 1px solid var(--muted); }
+.legend i.f { background: var(--muted); border-color: transparent; }
+.legend i.h { border-style: dashed; }
+
+/* ---------- 雷達 ---------- */
+.radar-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 300px); gap: 28px; align-items: center; background: var(--sheet); border: 1px solid var(--rule); border-radius: 16px; padding: 22px; }
+.radar-wrap svg { width: 100%; max-width: 520px; height: auto; justify-self: center; }
+.radar-wrap .grid { fill: none; stroke: var(--rule); }
+.radar-wrap .axis { stroke: var(--rule); }
+.radar-wrap text { fill: var(--muted); font-size: 12px; font-family: var(--body); }
+.shape { fill-opacity: .14; stroke-width: 2.5; transition: opacity .35s; }
+.shape.off { opacity: 0; }
+.toggles { display: grid; gap: 8px; }
+.tg { display: flex; align-items: center; gap: 10px; justify-content: space-between; border: 1px solid var(--rule); background: var(--sheet-2); border-radius: 10px; padding: 10px 12px; text-align: left; }
+.tg[aria-pressed="false"] { opacity: .45; }
+.tg .sc { font-variant-numeric: tabular-nums; font-weight: 900; }
+.fine { font-size: 13px; color: var(--muted); }
+
+/* ---------- 表 ---------- */
+.filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.tbl { background: var(--sheet); border: 1px solid var(--rule); border-radius: 16px; overflow: hidden; }
+.tscroll { overflow-x: auto; }
+.row, .thead { display: grid; grid-template-columns: 210px repeat(4, minmax(150px, 1fr)); min-width: 840px; }
+.thead div { padding: 12px 14px; font-size: 13px; font-weight: 700; background: var(--sheet-2); border-bottom: 1px solid var(--rule); display: flex; align-items: center; gap: 8px; }
+.row { border-bottom: 1px solid var(--rule); cursor: pointer; transition: background .2s; }
+.row:hover { background: var(--sheet-2); }
+.row > div { padding: 12px 14px; font-size: 14px; }
+.row .q { font-weight: 700; display: flex; gap: 8px; align-items: flex-start; }
+.row .q .caret { transition: transform .25s; color: var(--muted); }
+.row[aria-expanded="true"] .q .caret { transform: rotate(90deg); }
+.row .c.ours { background: var(--seal-soft); }
+.mk { font-weight: 900; margin-right: 6px; }
+.y { color: var(--yes); } .p { color: var(--part); } .n { color: var(--no); }
+.row small { display: block; color: var(--muted); font-size: 12.5px; line-height: 1.55; }
+.more { grid-column: 1 / -1; padding: 0 14px 14px 36px !important; font-size: 14.5px; color: var(--ink); }
+.more[hidden] { display: none !important; }
+.badge { font-size: 11.5px; font-weight: 700; padding: 1px 8px; border-radius: 99px; background: var(--seal); color: var(--sheet); white-space: nowrap; }
+.empty { padding: 18px; color: var(--muted); }
+
+/* ---------- 測驗 ---------- */
+.quiz { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 18px; }
+.qbox, .result { background: var(--sheet); border: 1px solid var(--rule); border-radius: 16px; padding: 20px; display: grid; gap: 16px; align-content: start; }
+.qitem { display: grid; gap: 8px; }
+.qitem .qq { font-weight: 700; }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt { border: 1px solid var(--rule); background: var(--sheet-2); border-radius: 10px; padding: 8px 14px; font-size: 14.5px; }
+.opt[aria-pressed="true"] { border-color: var(--seal); background: var(--seal-soft); color: var(--seal); font-weight: 700; }
+.result { border-color: var(--seal); box-shadow: 0 18px 40px -26px var(--glow); }
+.result .pick { font-family: var(--display); font-size: 28px; font-weight: 900; display: flex; align-items: center; gap: 12px; }
+.result ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+
+/* ---------- 學習、注意、來源 ---------- */
+.learn { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.lcard { background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; padding: 18px 20px; display: grid; gap: 8px; border-top: 4px solid var(--legal); }
+.note { font-size: 13.5px; color: var(--muted); border: 1px dashed var(--rule); border-radius: 12px; padding: 14px 16px; background: var(--sheet); }
+.sources ol { margin: 0; padding-left: 1.4em; font-size: 13.5px; display: grid; gap: 4px; }
+a { color: var(--legal); text-underline-offset: 3px; }
+
+@media (max-width: 860px) {
+  .hero, .radar-wrap, .quiz { grid-template-columns: minmax(0, 1fr); }
+  .track { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 480px) {
+  .track { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .line .txt { font-size: 15.5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+</style>
+
+<div class="wrap">
+
+  <!-- 開頭 -->
+  <section class="hero" aria-label="開頭">
+    <div class="hero-copy">
+      <div class="kicker">比較報告　2026 年 10 月</div>
+      <h1>內規改一處，<br><span class="pen">別處也要跟著改<svg viewBox="0 0 300 18" preserveAspectRatio="none" aria-hidden="true"><path id="penPath" d="M3 11 C 70 3, 150 16, 297 6"/></svg></span></h1>
+      <p class="lede">我們這套 reg 就是在做這件事。網路上有沒有一樣的？我找了三種最像的來比。</p>
+      <div class="chips" id="chips"></div>
+    </div>
+    <div class="demo" id="demo" aria-label="示範：reg 在做什麼">
+      <div class="demo-top">
+        <span class="demo-title">看一次就懂</span>
+        <button class="replay" id="replay" type="button">▶ 再播一次</button>
+      </div>
+      <div class="line">
+        <span class="lab">① 你這次改了第四條</span>
+        <span class="txt">第四條　業務人員受理申訴，應於<span class="strike">三</span><span class="ins">五</span>日內陳報主管。</span>
+      </div>
+      <div class="arrow" aria-hidden="true">↓</div>
+      <div class="line hit">
+        <span class="lab">② reg 幫你找到第十條</span>
+        <span class="txt">第十條　產險業務人員受理申訴，應於<span class="found">三<svg viewBox="0 0 40 40" preserveAspectRatio="none" aria-hidden="true"><ellipse cx="20" cy="20" rx="19" ry="17"/></svg></span>日內陳報主管。</span>
+      </div>
+      <div class="callout"><span aria-hidden="true">✎</span><span>這裡還寫「三日」。<b>不改就前後矛盾。</b>reg 會列出來，再幫你寫進 Word、改完再檢查一次。</span></div>
+    </div>
+  </section>
+
+  <!-- 結論 -->
+  <section>
+    <div class="sec-head">
+      <div class="kicker">一　先講結論</div>
+      <h2>有相似的，但沒有一套跟我們一樣</h2>
+      <p class="lede">從「外面法律改了」到「送簽」，一共八步。看每種工具做了幾步。</p>
+    </div>
+    <div class="verdict" id="verdict"></div>
+  </section>
+
+  <!-- 流程 -->
+  <section>
+    <div class="sec-head">
+      <div class="kicker">二　各自管哪一段</div>
+      <h2>點一個工具，看它亮哪幾步</h2>
+      <p class="lede">再點任何一步，下面會說每個工具在那一步做什麼。</p>
+    </div>
+    <div class="tabs" id="toolTabs" role="group" aria-label="選工具"></div>
+    <div class="legend"><span><i class="f"></i>有做</span><span><i class="h"></i>做一部分</span><span>灰色＝沒做或查不到</span></div>
+    <div class="track" id="track"></div>
+    <div class="detail" id="detail" aria-live="polite"></div>
+  </section>
+
+  <!-- 雷達 -->
+  <section>
+    <div class="sec-head">
+      <div class="kicker">三　一張圖看形狀</div>
+      <h2>我們的形狀很大，別人只凸一兩個角</h2>
+    </div>
+    <div class="radar-wrap">
+      <svg id="radar" viewBox="-70 0 660 470" role="img" aria-label="四種工具在八個步驟的雷達圖"></svg>
+      <div class="toggles">
+        <p class="fine">點一下，可以打開或關掉一個工具。</p>
+        <div id="radarToggles" class="toggles"></div>
+        <p class="fine">怎麼算的：每一步「有做」算 2、「做一部分」算 1、「沒做」算 0，最高 16。這是照本報告的勾選換算，不是實際測量的分數。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 表 -->
+  <section>
+    <div class="sec-head">
+      <div class="kicker">四　一項一項比</div>
+      <h2>點一列，看白話說明</h2>
+    </div>
+    <div class="filters" id="filters" role="group" aria-label="篩選"></div>
+    <div class="tbl">
+      <div class="tscroll" role="region" aria-label="功能比較表" tabindex="0">
+        <div class="thead" id="thead"></div>
+        <div id="rows"></div>
+      </div>
+    </div>
+    <p class="fine"><span class="mk y">●</span>有　<span class="mk p">◐</span>一部分　<span class="mk n">○</span>沒有或查不到</p>
+  </section>
+
+  <!-- 測驗 -->
+  <section>
+    <div class="sec-head">
+      <div class="kicker">五　你該用哪一個</div>
+      <h2>回答三題，馬上告訴你</h2>
+    </div>
+    <div class="quiz">
+      <div class="qbox" id="qbox"></div>
+      <div class="result" id="result" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 可以學的 -->
+  <section>
+    <div class="sec-head">
+      <div class="kicker">六　我們可以學的</div>
+      <h2>別人有、我們還沒有的</h2>
+    </div>
+    <div class="learn">
+      <div class="lcard">
+        <h3>外面法律一改，就找出受影響的內規</h3>
+        <p>例如金管會改了辦法。程式自動列出哪幾本、哪幾段要看。</p>
+        <p class="fine">claude-for-legal 和法遵平台都有。我們現在只在修內規時，順便檢查引用的法律還有沒有效。</p>
+      </div>
+      <div class="lcard">
+        <h3>先做一份內規清單</h3>
+        <p>法遵平台都要先把內規整理好，之後才找得快。</p>
+        <p class="fine">我們的「建基準」已經在做這件事。之後可以拿它來對新法規。</p>
+      </div>
+    </div>
+  </section>
+
+  <p class="note">注意：這份比較是看網路上的介紹寫的，四種都沒有實際試用。「查不到」只代表介紹裡沒寫，不一定真的沒有。價格是第三方網站的說法，要以廠商為準。</p>
+
+  <section class="sources">
+    <div class="sec-head"><div class="kicker">七　資料來源</div></div>
+    <ol>
+      <li><a href="https://tessl.io/registry/skills/github/anthropics/claude-for-legal">Anthropic claude-for-legal（tessl 目錄）</a></li>
+      <li><a href="https://tessl.io/registry/skills/github/anthropics/claude-for-legal/policy-redraft/review">policy-redraft 說明</a></li>
+      <li><a href="https://mcpservers.org/agent-skills/anthropic/policy-diff">policy-diff 說明（mcpservers）</a></li>
+      <li><a href="https://www.skills.sh/anthropics/claude-for-legal/policy-diff">policy-diff（skills.sh）</a></li>
+      <li><a href="https://www.draftable.com/draftable-compare">Draftable for Legal Teams</a></li>
+      <li><a href="https://legaltechnologyhub.com/vendors/litera-compare-by-litera">Litera Compare（Legal Technology Hub）</a></li>
+      <li><a href="https://www.guideflow.com/blog/legal-document-comparison-software">法律文件比對軟體整理（guideflow）</a></li>
+      <li><a href="https://www.vaquill.ai/blog/best-legal-redline-software-2026">2026 法律紅字比對軟體整理（vaquill）</a></li>
+      <li><a href="https://www.guideflow.com/blog/regulatory-change-management-software">法規變更管理軟體整理（guideflow）</a></li>
+      <li><a href="https://fintech.global/2024/10/30/boosting-rcm-efficiency-how-ai-powers-up-regulatory-change-management/">AI 與法規變更管理（FinTech Global）</a></li>
+      <li><a href="https://360factors.com/blog/benefits-of-an-automated-change-management">Predict360 自動化法規變更管理</a></li>
+    </ol>
+  </section>
+</div>
+
+<script>
+(function () {
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var TOOLS = [
+    { id: "reg", name: "我們 reg", color: "var(--seal)", what: "內規改一處，找別處要不要跟著改。寫進 Word，改完再檢查。" },
+    { id: "legal", name: "claude-for-legal", color: "var(--legal)", what: "外面的法規改了，找受影響的內規，再草擬怎麼改。英文、美國法規。" },
+    { id: "cmp", name: "比對軟體", color: "var(--cmp)", what: "Litera、Draftable。比兩份文件差在哪，用紅字標出來。要付費。" },
+    { id: "grc", name: "法遵平台", color: "var(--grc)", what: "4CRisk、Predict360、FiscalNote。一直盯著新法規，對到內規，追蹤誰處理。要報價。" }
+  ];
+  // 八步：每個工具 1＝有做、0.5＝一部分、0＝沒做；note 是那一步怎麼做
+  var STAGES = [
+    { nm: "外面法律改了", tip: "金管會改了辦法，要找出哪些內規受影響。",
+      c: { reg: .5, legal: 1, cmp: 0, grc: 1 },
+      note: { reg: "只在修內規時，檢查引用的法律還有沒有效。", legal: "policy-diff 專做這件事。", cmp: "沒有。", grc: "一直盯著新法規，自動對到內規。" } },
+    { nm: "比兩版差在哪", tip: "新舊兩版，哪裡新增、修改、刪除。",
+      c: { reg: 1, legal: 0, cmp: 1, grc: .5 },
+      note: { reg: "新增、修改、刪除、搬移、只換號都分得出來。", legal: "沒有。它比的是法律和內規，不是兩版內規。", cmp: "這是它的專長。", grc: "有差異分析，細節查不到。" } },
+    { nm: "別處要跟著改嗎", tip: "改了一處，同一本、別本還寫著舊的。",
+      c: { reg: 1, legal: 0, cmp: 0, grc: 0 },
+      note: { reg: "同一本、別本都找，還講是怎麼找到的。", legal: "沒有。", cmp: "沒有。", grc: "沒有。它是法律對內規，不是內規對內規。" } },
+    { nm: "條號換了", tip: "刪一條、加一條後，「前條」「第五條」有沒有指錯。",
+      c: { reg: 1, legal: 0, cmp: 0, grc: 0 },
+      note: { reg: "「前條」「第五條」都檢查，指錯會報。", legal: "查不到。", cmp: "查不到。", grc: "查不到。" } },
+    { nm: "草擬怎麼改", tip: "給一個建議的新寫法。",
+      c: { reg: 1, legal: 1, cmp: 0, grc: .5 },
+      note: { reg: "每一處給建議改法，AI 說理由，人決定。", legal: "policy-redraft 草擬，它也說只是初稿。", cmp: "不草擬。", grc: "會建議改哪些字。" } },
+    { nm: "寫進 Word", tip: "用紅字、刪除線寫進 Word。",
+      c: { reg: 1, legal: 0, cmp: 1, grc: 0 },
+      note: { reg: "寫成 Word 的追蹤修訂。", legal: "查不到。", cmp: "可以輸出 Word 修訂。", grc: "查不到。" } },
+    { nm: "改完再檢查", tip: "改好的版本再比一次，看有沒有漏。",
+      c: { reg: 1, legal: 0, cmp: 0, grc: 0 },
+      note: { reg: "拿改好的版本再比一次，漏改的會列出來。", legal: "沒有。", cmp: "要自己再比一次。", grc: "會追蹤誰處理完，但不會再比內容。" } },
+    { nm: "出對照表、公文", tip: "台灣格式的修正對照表、簽稿草稿。",
+      c: { reg: 1, legal: 0, cmp: 0, grc: 0 },
+      note: { reg: "修正對照表、修改依據、簽稿草稿都有。", legal: "沒有，英文。", cmp: "沒有台灣格式。", grc: "查不到。" } }
+  ];
+  var ROWS = [
+    { q: "中文、台灣格式", m: ["y", "n", "n", "n"], t: ["修正對照表、修改依據、簽稿草稿", "英文", "只有紅字比對", "查不到"], s: ["", "例子都是美國法規", "沒有台灣的對照表格式", ""],
+      more: "送簽要用台灣的修正對照表。只有我們會直接做出來。其他三種要自己再整理一次。" },
+    { q: "比兩版差在哪", m: ["y", "n", "y", "p"], t: ["新增、修改、刪除、搬移", "不是比兩版", "這是它的專長", "有差異分析"], s: ["只換號的也分得出來", "它比的是法律和內規", "也標得出搬移", "細節查不到"],
+      more: "比兩版，我們和比對軟體都做得好。比對軟體還能比 PDF、合約。" },
+    { q: "別處要不要跟著改", m: ["y", "n", "n", "n"], t: ["同一本、別本都找", "沒有", "沒有", "沒有"], s: ["還講是怎麼找到的", "", "", "它是法律對內規"],
+      more: "這是我們最大的不同。第四條改了「三日」，我們會找到第十條也寫「三日」。別人都不會。" },
+    { q: "條號換了，引用有沒有指錯", m: ["y", "n", "n", "n"], t: ["「前條」「第五條」都檢查", "查不到", "查不到", "查不到"], s: ["", "", "", ""],
+      more: "刪掉一條，後面全部換號。「前條」可能就指到別條。我們會抓出來。" },
+    { q: "外面法律改了，找受影響的內規", m: ["p", "y", "n", "y"], t: ["只檢查引用的法律", "policy-diff 專做", "沒有", "一直盯著新法規"], s: ["還有沒有效", "", "", ""],
+      more: "這一項別人比我們強。金管會改了辦法，它們會自動找哪些內規要改。我們可以學。" },
+    { q: "草擬怎麼改", m: ["y", "y", "n", "p"], t: ["每一處給建議改法", "policy-redraft 草擬", "不草擬", "建議改哪些字"], s: ["AI 說理由，人決定", "它也說只是初稿", "", ""],
+      more: "我們和 claude-for-legal 都會草擬。兩邊都說：最後要人決定。" },
+    { q: "寫進 Word 紅字修訂", m: ["y", "n", "y", "n"], t: ["寫成追蹤修訂", "查不到", "可以輸出", "查不到"], s: ["", "", "Word 修訂、PDF", ""],
+      more: "我們會直接改進 Word。你打開就看到紅字，接受或拒絕都可以。" },
+    { q: "改完再檢查有沒有漏", m: ["y", "n", "n", "n"], t: ["拿改好的版本再比一次", "沒有", "要自己再比", "只追蹤進度"], s: ["", "", "", "不會再比內容"],
+      more: "改完不是就結束。我們會再比一次，看有沒有該改沒改到的。" },
+    { q: "誰做決定", m: ["y", "y", "y", "y"], t: ["人決定", "人決定", "人自己看", "人決定"], s: ["AI 只建議，核准前先給人看", "它寫明是初稿", "", "廠商說 AI 是輔助"],
+      more: "四種都一樣：工具只是幫忙，最後由人決定。" },
+    { q: "要花多少錢", m: ["y", "y", "p", "n"], t: ["自己的，不另外付費", "免費", "要付費", "要報價"], s: ["", "要有 Claude", "Draftable 約每人每月 29 美元（第三方說法）", "還要先把內規全部搬進去"],
+      more: "比對軟體和法遵平台都要付費。法遵平台還要先花時間把內規搬進去。" },
+    { q: "資料放在哪", m: ["y", "p", "p", "n"], t: ["自己的電腦或 SPADE", "在 Claude 裡跑", "看方案", "查不到"], s: ["", "", "Draftable 桌面版在本機比", ""],
+      more: "內規是公司的資料。我們的放在自己的電腦或 SPADE，不用交給別人。" }
+  ];
+  var MARK = { y: "●", p: "◐", n: "○" };
+  function el(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
+  function score(id) { return STAGES.reduce(function (s, st) { return s + st.c[id]; }, 0); }
+  function fmt(n) { return (Math.round(n * 10) / 10).toString(); }
+
+  // 開頭小標籤
+  var chips = document.getElementById("chips");
+  TOOLS.forEach(function (t) { chips.appendChild(el("span", "chip", '<span class="dot" style="background:' + t.color + '"></span>' + t.name)); });
+
+  // 示範動畫：完成的樣子是預設；播放時先歸零再一步一步出現
+  var demo = document.getElementById("demo");
+  var pen = document.getElementById("penPath");
+  var timers = [];
+  function play() {
+    if (reduce) return;
+    timers.forEach(clearTimeout); timers = [];
+    demo.classList.add("reset");
+    var hit = demo.querySelector(".line.hit"); hit.classList.remove("hit");
+    void demo.offsetWidth;
+    demo.classList.remove("reset");
+    demo.querySelector(".ins").style.opacity = "0";
+    demo.querySelector(".strike").classList.add("pending");
+    var stk = demo.querySelector(".strike");
+    stk.style.setProperty("--x", "0");
+    var steps = [
+      [150, function () { stk.classList.remove("pending"); }],
+      [700, function () { demo.querySelector(".ins").style.opacity = ""; }],
+      [1300, function () { hit.classList.add("hit"); }]
+    ];
+    // 圈圈與箭頭跟著時間出現
+    var ell = demo.querySelector(".found ellipse"); ell.style.strokeDashoffset = "120";
+    var arrow = demo.querySelector(".arrow"), call = demo.querySelector(".callout");
+    arrow.style.opacity = ".15"; call.style.opacity = ".15";
+    stk.style.setProperty("transform", "");
+    timers.push(setTimeout(function () { arrow.style.opacity = ""; }, 1000));
+    timers.push(setTimeout(function () { ell.style.strokeDashoffset = ""; }, 1400));
+    timers.push(setTimeout(function () { call.style.opacity = ""; }, 2100));
+    steps.forEach(function (s) { timers.push(setTimeout(s[1], s[0])); });
+    if (pen) { pen.style.transition = "none"; pen.style.strokeDashoffset = "420"; void pen.getBoundingClientRect(); pen.style.transition = "stroke-dashoffset 1.1s ease"; pen.style.strokeDashoffset = "0"; }
+  }
+  // 刪除線：pending 時寬度 0
+  var css = document.createElement("style");
+  css.textContent = ".strike.pending::after{transform:scaleX(0);transition:none}";
+  document.head.appendChild(css);
+  document.getElementById("replay").addEventListener("click", play);
+  if (!reduce) setTimeout(play, 500);
+
+  // 結論卡
+  var verdict = document.getElementById("verdict");
+  var LINES = {
+    reg: "八步做了七步半。只有「外面法律改了」做一半。",
+    legal: "做「找受影響的內規」和「草擬怎麼改」。",
+    cmp: "做「比兩版」和「寫進 Word」。",
+    grc: "主要做「盯著新法規」。另外兩步各做一部分。"
+  };
+  TOOLS.forEach(function (t) {
+    var s = score(t.id);
+    var c = el("div", "vcard" + (t.id === "reg" ? " ours" : ""));
+    c.innerHTML = '<div class="chip" style="justify-self:start"><span class="dot" style="background:' + t.color + '"></span>' + t.name + '</div>' +
+      '<div class="big" style="color:' + t.color + '">' + fmt(s) + ' <small>／8 步</small></div>' +
+      '<div class="meter" aria-hidden="true"><i style="width:' + (s / 8 * 100) + '%;background:' + t.color + '"></i></div>' +
+      '<p>' + LINES[t.id] + '</p>';
+    verdict.appendChild(c);
+  });
+
+  // 流程
+  var current = "all", openStage = 2;
+  var tabs = document.getElementById("toolTabs");
+  [{ id: "all", name: "全部一起看", color: "var(--muted)" }].concat(TOOLS).forEach(function (t) {
+    var b = el("button", "tab", (t.id === "all" ? "" : '<span class="dot" style="background:' + t.color + '"></span>') + t.name);
+    b.type = "button"; b.dataset.id = t.id; b.setAttribute("aria-pressed", t.id === current ? "true" : "false");
+    b.addEventListener("click", function () { current = t.id; renderTrack(); });
+    tabs.appendChild(b);
+  });
+  var track = document.getElementById("track");
+  function renderTrack() {
+    tabs.querySelectorAll(".tab").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.id === current ? "true" : "false"); });
+    track.classList.toggle("focus", current !== "all");
+    track.innerHTML = "";
+    STAGES.forEach(function (st, i) {
+      var b = el("button", "stage");
+      b.type = "button"; b.setAttribute("aria-expanded", i === openStage ? "true" : "false");
+      var lights = TOOLS.map(function (t) {
+        var v = st.c[t.id];
+        var cls = "lt" + (v === 1 ? " full" : v ? " half" : "") + (current === t.id ? " on" : "");
+        var style = v === 1 ? "background:" + t.color : v ? "border-color:" + t.color + ";background:repeating-linear-gradient(45deg," + t.color + " 0 4px,transparent 4px 8px)" : "";
+        return '<i class="' + cls + '" style="' + style + '" title="' + t.name + '"></i>';
+      }).join("");
+      b.innerHTML = '<span class="n">第 ' + (i + 1) + ' 步</span><span class="nm">' + st.nm + '</span><span class="lights">' + lights + '</span>';
+      b.setAttribute("aria-label", "第 " + (i + 1) + " 步：" + st.nm);
+      b.addEventListener("click", function () { openStage = i; renderTrack(); });
+      track.appendChild(b);
+    });
+    renderDetail();
+  }
+  var detail = document.getElementById("detail");
+  function renderDetail() {
+    var st = STAGES[openStage];
+    var html = '<h3><span class="kicker">第 ' + (openStage + 1) + ' 步</span>' + st.nm + '</h3><p class="lede">' + st.tip + '</p><div class="dgrid">';
+    TOOLS.forEach(function (t) {
+      var v = st.c[t.id];
+      var lab = v === 1 ? '<span class="st y">● 有做</span>' : v ? '<span class="st p">◐ 做一部分</span>' : '<span class="st n">○ 沒做</span>';
+      var dim = current !== "all" && current !== t.id ? ' style="opacity:.4;border-left-color:' + t.color + '"' : ' style="border-left-color:' + t.color + '"';
+      html += '<div class="dcell"' + dim + '><b>' + t.name + '</b>' + lab + '<span>' + st.note[t.id] + '</span></div>';
+    });
+    detail.innerHTML = html + '</div>';
+  }
+  renderTrack();
+
+  // 雷達圖
+  var svg = document.getElementById("radar");
+  var NS = "http://www.w3.org/2000/svg";
+  var cx = 260, cy = 235, R = 165, N = STAGES.length;
+  function pt(i, r) { var a = -Math.PI / 2 + i * 2 * Math.PI / N; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; }
+  function mk(tag, attrs) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
+  [0.5, 1].forEach(function (f) {
+    svg.appendChild(mk("polygon", { class: "grid", points: STAGES.map(function (_, i) { return pt(i, R * f).join(","); }).join(" ") }));
+  });
+  STAGES.forEach(function (st, i) {
+    var p = pt(i, R); svg.appendChild(mk("line", { class: "axis", x1: cx, y1: cy, x2: p[0], y2: p[1] }));
+    var q = pt(i, R + 26); var tx = mk("text", { x: q[0], y: q[1] + 4, "text-anchor": Math.abs(q[0] - cx) < 10 ? "middle" : q[0] > cx ? "start" : "end" });
+    tx.textContent = st.nm; svg.appendChild(tx);
+  });
+  var shapes = {};
+  TOOLS.slice().reverse().forEach(function (t) {
+    var pts = STAGES.map(function (st, i) { var v = st.c[t.id]; return pt(i, Math.max(v, 0.04) * R).join(","); }).join(" ");
+    var s = mk("polygon", { class: "shape", points: pts, fill: t.color, stroke: t.color });
+    s.style.fill = t.color; s.style.stroke = t.color;
+    svg.appendChild(s); shapes[t.id] = s;
+  });
+  var toggles = document.getElementById("radarToggles");
+  TOOLS.forEach(function (t) {
+    var b = el("button", "tg", '<span style="display:inline-flex;align-items:center;gap:8px"><span class="dot" style="background:' + t.color + '"></span>' + t.name + '</span><span class="sc" style="color:' + t.color + '">' + fmt(score(t.id) * 2) + ' 分</span>');
+    b.type = "button"; b.setAttribute("aria-pressed", "true");
+    b.addEventListener("click", function () {
+      var on = b.getAttribute("aria-pressed") !== "true";
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+      shapes[t.id].classList.toggle("off", !on);
+    });
+    toggles.appendChild(b);
+  });
+
+  // 比較表
+  var thead = document.getElementById("thead");
+  thead.appendChild(el("div", "", "比什麼"));
+  TOOLS.forEach(function (t) { thead.appendChild(el("div", "", '<span class="dot" style="background:' + t.color + '"></span>' + t.name)); });
+  var FILTERS = [
+    { id: "all", name: "全部 11 項", test: function () { return true; } },
+    { id: "only", name: "只看我們獨有的", test: function (r) { return r.m[0] === "y" && r.m.slice(1).every(function (x) { return x === "n"; }); } },
+    { id: "behind", name: "只看別人比我們強的", test: function (r) { var o = { y: 2, p: 1, n: 0 }; return r.m.slice(1).some(function (x) { return o[x] > o[r.m[0]]; }); } }
+  ];
+  var filt = "all";
+  var fbox = document.getElementById("filters");
+  FILTERS.forEach(function (f) {
+    var b = el("button", "tab", f.name); b.type = "button"; b.dataset.id = f.id;
+    b.addEventListener("click", function () { filt = f.id; renderRows(); });
+    fbox.appendChild(b);
+  });
+  var rowsBox = document.getElementById("rows");
+  function renderRows() {
+    fbox.querySelectorAll(".tab").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.id === filt ? "true" : "false"); });
+    rowsBox.innerHTML = "";
+    var test = FILTERS.filter(function (f) { return f.id === filt; })[0].test;
+    var list = ROWS.filter(test);
+    if (!list.length) { rowsBox.appendChild(el("div", "empty", "沒有符合的項目。")); return; }
+    list.forEach(function (r) {
+      var only = FILTERS[1].test(r);
+      var row = el("div", "row");
+      row.setAttribute("role", "button"); row.tabIndex = 0; row.setAttribute("aria-expanded", "false");
+      var html = '<div class="q"><span class="caret" aria-hidden="true">▸</span><span>' + r.q + (only ? ' <span class="badge">只有我們</span>' : '') + '</span></div>';
+      r.m.forEach(function (m, i) {
+        html += '<div class="c' + (i === 0 ? " ours" : "") + '"><span class="mk ' + m + '">' + MARK[m] + '</span>' + r.t[i] + (r.s[i] ? '<small>' + r.s[i] + '</small>' : '') + '</div>';
+      });
+      html += '<div class="more" hidden>' + r.more + '</div>';
+      row.innerHTML = html;
+      function toggle() {
+        var open = row.getAttribute("aria-expanded") !== "true";
+        row.setAttribute("aria-expanded", open ? "true" : "false");
+        row.querySelector(".more").hidden = !open;
+      }
+      row.addEventListener("click", toggle);
+      row.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } });
+      rowsBox.appendChild(row);
+    });
+  }
+  renderRows();
+
+  // 測驗
+  var QS = [
+    { id: "need", q: "你現在要做什麼？", o: [["self", "內規要改一處"], ["law", "外面的法律改了"], ["diff", "只想看兩份文件差在哪"]] },
+    { id: "tw", q: "要出台灣格式的修正對照表嗎？", o: [["yes", "要"], ["no", "不用"]] },
+    { id: "budget", q: "有預算買一整套系統嗎？", o: [["yes", "有"], ["no", "沒有"]] }
+  ];
+  var ans = { need: "self", tw: "yes", budget: "no" };
+  var qbox = document.getElementById("qbox"), result = document.getElementById("result");
+  QS.forEach(function (Q, qi) {
+    var item = el("div", "qitem", '<div class="qq">' + (qi + 1) + '. ' + Q.q + '</div>');
+    var opts = el("div", "opts"); opts.setAttribute("role", "group"); opts.setAttribute("aria-label", Q.q);
+    Q.o.forEach(function (o) {
+      var b = el("button", "opt", o[1]); b.type = "button"; b.dataset.q = Q.id; b.dataset.v = o[0];
+      b.addEventListener("click", function () { ans[Q.id] = o[0]; renderQuiz(); });
+      opts.appendChild(b);
+    });
+    item.appendChild(opts); qbox.appendChild(item);
+  });
+  function pick() {
+    if (ans.need === "self") return { id: "reg", why: ["改一處、找別處要不要跟著改，就是我們在做的事。", ans.tw === "yes" ? "還會直接出台灣格式的修正對照表。" : "就算不用對照表，找連帶修正也只有我們做。"] };
+    if (ans.need === "law") {
+      if (ans.budget === "yes") return { id: "grc", why: ["它會一直盯著新法規，自動對到內規。", "要先把內規全部搬進去，也要報價。", "找到要改的內規後，可以再用我們的 reg 改。"] };
+      return { id: "legal", why: ["policy-diff 專門找受影響的內規。", "是英文、美國法規，要自己調整成台灣用。", "或請我們把這個功能加進 reg。"] };
+    }
+    if (ans.tw === "yes") return { id: "reg", why: ["只看差在哪的話，比對軟體也行。", "但你要台灣格式的對照表，我們會直接做好。"] };
+    return { id: "cmp", why: ["只要比兩份文件，比對軟體最專門。", "也能比 PDF、合約。要付費。"] };
+  }
+  function renderQuiz() {
+    qbox.querySelectorAll(".opt").forEach(function (b) { b.setAttribute("aria-pressed", ans[b.dataset.q] === b.dataset.v ? "true" : "false"); });
+    var r = pick(); var t = TOOLS.filter(function (x) { return x.id === r.id; })[0];
+    result.style.borderColor = t.color;
+    result.innerHTML = '<div class="kicker" style="color:' + t.color + '">建議你用</div><div class="pick"><span class="dot" style="width:16px;height:16px;background:' + t.color + '"></span>' + t.name + '</div><p>' + t.what + '</p><ul>' + r.why.map(function (w) { return "<li>" + w + "</li>"; }).join("") + '</ul>';
+  }
+  renderQuiz();
+})();
+</script>
+
+</body></html>
