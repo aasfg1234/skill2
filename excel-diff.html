@@ -705,7 +705,7 @@ td.hf{background:color-mix(in srgb,var(--slate-wash) 60%,transparent)}
   .btn.ic,.nav-step,.box-step{min-width:44px}
   .btn.mini,.flt-btn{min-height:40px}
   .step-btn{padding:8px 12px}
-  .tabs button{min-height:38px}
+  .tabs button{min-height:44px}
   .chk,.inc-cell{min-height:44px}
   .opts .chk{flex:1 1 100%}
   .flt select,.flt input{min-height:36px}
@@ -1327,7 +1327,7 @@ function fxRule(f, rowNo){
 // Column rules: when most rows of a column follow one formula on each side, that is the column's rule. A rule that
 // changed is reported once for the whole column (rows following it get 'rule'); rows that stray from the rule, or
 // that changed while the rule did not, are the exceptions ('exc'). Sets it.fr and returns the rule changes.
-function fxColumnRules(A, B, cols, shared, items){
+function fxColumnRules(A, B, cols, shared, items, moved){
   const rules=[];
   for (const k of shared){
     const c=cols[k], rows=[];
@@ -1346,10 +1346,11 @@ function fxColumnRules(A, B, cols, shared, items){
     for (const r of rows){
       const kind=r.it.fd && r.it.fd.get(k); if (!kind) continue;
       const follows = changed && r.ra===domA && r.rb===domB;
-      (r.it.fr || (r.it.fr=new Map())).set(k, follows ? 'rule' : 'exc');
+      const strays = (domA && r.ra!==domA) || (domB && r.rb!==domB); // off the column's rule on at least one side
+      if (follows || strays) (r.it.fr || (r.it.fr=new Map())).set(k, follows ? 'rule' : 'exc');
       if (follows){ n++; if (!first) first=r; }
     }
-    if (changed && n) rules.push({k, from:domA, to:domB, n, why:fxWhy(first.fa, first.fb, null, '', '')});
+    if (changed && n) rules.push({k, from:domA, to:domB, n, it:first.it, why:fxWhy(first.fa, first.fb, moved, '', '')});
   }
   return rules;
 }
@@ -1446,8 +1447,7 @@ function fmtParts(a, b){
   add('底色', bgT(a.bg), bgT(b.bg), bgH(a.bg), bgH(b.bg));
   add('框線', a.bd||'無', b.bd||'無');
   const al=d=>[HALIGN[d.ha]||'', VALIGN[d.va]||'', d.wr?'自動換行':''].filter(Boolean).join('、')||'預設'; add('對齊', al(a), al(b));
-  // a colour as text: #FFFF00 is what the TSV and the export show; the swatch is for the screen
-  return out.map(p=>({...p, a:p.a.replace(/^#/,'#'), b:p.b.replace(/^#/,'#')}));
+  return out;
 }
 const fmtWords=parts=>({ old:parts.map(p=>`${p.label} ${p.a}`).join('；'), neu:parts.map(p=>`${p.label} ${p.b}`).join('；'),
   oldHtml:parts.map(p=>`${p.label} ${p.ah}`).join('；'), neuHtml:parts.map(p=>`${p.label} ${p.bh}`).join('；'),
@@ -1467,10 +1467,11 @@ function fmColumnRules(A, B, cols, shared, items){
     for (const r of rows){
       if (!(r.it.fm && r.it.fm.has(k))) continue;
       const follows = changed && r.ra===domA && r.rb===domB;
-      (r.it.fmr || (r.it.fmr=new Map())).set(k, follows ? 'rule' : 'exc');
+      const strays = (domA!=null && r.ra!==domA) || (domB!=null && r.rb!==domB);
+      if (follows || strays) (r.it.fmr || (r.it.fmr=new Map())).set(k, follows ? 'rule' : 'exc');
       if (follows){ n++; if (!first) first=r; }
     }
-    if (changed && n) rules.push({k, n, parts:fmtParts(styleOf(A,first.it.i,c.a).d, styleOf(B,first.it.j,c.b).d)});
+    if (changed && n) rules.push({k, n, it:first.it, parts:fmtParts(styleOf(A,first.it.i,c.a).d, styleOf(B,first.it.j,c.b).d)});
   }
   return rules;
 }
@@ -1608,7 +1609,7 @@ function compareGrids(gA, gB, o){
         if (kind){ (it.fd || (it.fd=new Map())).set(k, kind); it.t='mod'; }
       }
     }
-    fxRules=fxColumnRules(A, B, cols, shared, items);
+    fxRules=fxColumnRules(A, B, cols, shared, items, moved);
   }
   // cell formats of matched rows (only when asked: a whole column changing its number format is common and noisy)
   let fmRules=[];
@@ -1829,10 +1830,15 @@ function statTiles(s){
   const stat=(cls,n,label)=>`<div class="stat ${cls}${n?'':' zero'}"><b>${n.toLocaleString()}</b><span>${label}</span></div>`;
   return stat('del danger',s.fOver||0,'格公式被蓋成固定值') + stat('mod',s.modCells,`格被修改（在 ${s.modRows.toLocaleString()} 列裡）`) + stat('add',s.add,'列是新增的') + stat('del',s.del,'列被刪除') + stat('add',s.addCols,'欄是新增的') + stat('del',s.delCols,'欄被刪除') + stat('mod',s.renCols||0,'欄被改名') + stat('mod',s.fCells||0,'格公式不同') + stat('mod',s.fmtCells||0,'格格式不同');
 }
+// what the lights say is being compared, as words: 值、公式、格式 (from a result, or from the lights themselves)
+function cmpWords(res){
+  const f = res ? {value:res.what==='value'||res.what==='both', formula:res.what==='formula'||res.what==='both', fmt:!!res.fmt} : cmpFlags();
+  return [f.value&&'值', f.formula&&'公式', f.fmt&&'格式'].filter(Boolean).join('、') || '值';
+}
 function renderSummaryAll(){
   const el=$('summary'), cmp=$('compared'), T=allTotals(), s=T.st;
   el.innerHTML = totalOf(s)===0 && !T.sheetsAdd && !T.sheetsDel
-    ? `<div class="same">全部工作表的值都一樣。</div>`
+    ? `<div class="same">全部工作表的${cmpWords()}都一樣。</div>`
     : statTiles(s);
   cmp.innerHTML=`顯示全部工作表：${T.pairs} 對兩邊比對（${T.diff} 對有差異）`+(T.sheetsAdd?`、${T.sheetsAdd} 個工作表新增`:'')+(T.sheetsDel?`、${T.sheetsDel} 個工作表刪除`:'')+'。上面的數字是全部加起來的。';
   cmp.hidden=false;
@@ -1845,7 +1851,7 @@ function renderSummary(res){
   }
   const s=res.st, total=totalOf(s); // the same count as the overview, the list and the status bar
   el.innerHTML = total===0
-    ? `<div class="same">兩個工作表的值完全一樣。</div>`
+    ? `<div class="same">兩個工作表的${cmpWords(res)}完全一樣。</div>`
     : statTiles(s);
   const nm=side=>books[side].sheet==null ? `${side}（沒有這個工作表）` : `${side}《<code>${esc(books[side].sheet)}</code>》`;
   let t=`比較的是 ${nm('A')}和 ${nm('B')}。`;
@@ -2082,12 +2088,12 @@ function listEntries(res){
   // a column whose format changed as a whole: one entry for the column
   (res.fmRules||[]).slice().reverse().forEach(r=>{
     const c=cols[r.k], w=fmtWords(r.parts);
-    out.unshift({t:'mod', type:'格式規則', key:'', pa:`${colL(c.a)} 欄`, pb:`${colL(c.b)} 欄`, col:c.label, old:w.old, neu:w.neu, html:{old:w.oldHtml, neu:w.neuHtml}, why:`整欄 ${r.n} 列一起改`});
+    out.unshift({t:'mod', type:'格式規則', key:'', pa:`${colL(c.a)} 欄`, pb:`${colL(c.b)} 欄`, col:c.label, old:w.old, neu:w.neu, html:{old:w.oldHtml, neu:w.neuHtml}, why:`整欄 ${r.n} 列一起改（點類型看其中一列）`, ref:{res, i:r.it.i, j:r.it.j, k:r.k, d:r.it.d, fd:r.it.fd, fr:r.it.fr, fm:r.it.fm, fmr:r.it.fmr}});
   });
   // a column whose formula rule changed: one entry for the whole column, in front of everything else
   (res.fxRules||[]).slice().reverse().forEach(r=>{
     const c=cols[r.k];
-    out.unshift({t:'mod', type:'公式規則', key:'', pa:`${colL(c.a)} 欄`, pb:`${colL(c.b)} 欄`, col:c.label, old:'='+r.from, neu:'='+r.to, why:`整欄 ${r.n} 列一起改：${r.why}（{r} 是該列自己的列號）`, runs:fxDiff(r.from, r.to, null)});
+    out.unshift({t:'mod', type:'公式規則', key:'', pa:`${colL(c.a)} 欄`, pb:`${colL(c.b)} 欄`, col:c.label, old:'='+r.from, neu:'='+r.to, why:`整欄 ${r.n} 列一起改：${r.why}（{r} 是該列自己的列號；點類型看其中一列）`, runs:fxDiff(r.from, r.to, null), ref:{res, i:r.it.i, j:r.it.j, k:r.k, d:r.it.d, fd:r.it.fd, fr:r.it.fr, fm:r.it.fm, fmr:r.it.fmr}});
   });
   res.visCols.forEach(k=>{ // same columns the grid and the summary count
     const c=cols[k];
@@ -2768,13 +2774,14 @@ function readXlsxStyles(u8){
   if (!u8 || u8[0]!==0x50 || u8[1]!==0x4B) return null;
   try {
     const cfb=XLSX.CFB.read(u8,{type:'array'}), dec=new TextDecoder();
-    const text=path=>{ const want=path.toLowerCase(); const i=cfb.FullPaths.findIndex(p=>{ const q=p.toLowerCase(); return q===want || q.endsWith('/'+want); }); const e=i>=0 && cfb.FileIndex[i]; return e && e.content ? dec.decode(e.content) : ''; };
+    // max: parts above it are skipped (a styles part of many megabytes, or a worksheet of tens of megabytes, would take too long here)
+    const text=(path, max)=>{ const want=path.toLowerCase(); const i=cfb.FullPaths.findIndex(p=>{ const q=p.toLowerCase(); return q===want || q.endsWith('/'+want); }); const e=i>=0 && cfb.FileIndex[i]; if (!e || !e.content || (max && e.content.length>max)) return ''; return dec.decode(e.content); };
     const attr=(tag,name)=>{ const m=new RegExp('(?:^|[\\s"])'+name+'="([^"]*)"').exec(tag); return m ? m[1] : null; }; // the first attribute has no space in front
-    const unesc=t=>t.replace(/&(amp|lt|gt|quot|apos|#x[0-9a-fA-F]+|#\d+);/g,(m,e)=>e==='amp'?'&':e==='lt'?'<':e==='gt'?'>':e==='quot'?'"':e==='apos'?"'":String.fromCodePoint(e[1]==='x'?parseInt(e.slice(2),16):parseInt(e.slice(1),10)));
+    const unesc=t=>t.replace(/&(amp|lt|gt|quot|apos|#x[0-9a-fA-F]+|#\d+);/g,(m,e)=>{ if (e==='amp') return '&'; if (e==='lt') return '<'; if (e==='gt') return '>'; if (e==='quot') return '"'; if (e==='apos') return "'"; const cp=e[1]==='x'?parseInt(e.slice(2),16):parseInt(e.slice(1),10); return cp>=0 && cp<=0x10FFFF ? String.fromCodePoint(cp) : m; });
     // attributes matched lazily: a self-closing tag must not swallow the tags after it
     const blocks=(xml,tag)=>{ const out=[], re=new RegExp('<'+tag+'(\\s[^>]*?)?(/>|>([\\s\\S]*?)</'+tag+'>)','g'); let m; while ((m=re.exec(xml))) out.push({attrs:m[1]||'', inner:m[3]||''}); return out; };
     const first=(xml,tag)=>{ const b=blocks(xml,tag); return b.length ? b[0] : null; };
-    const styles=text('xl/styles.xml'); if (!styles) return null;
+    const styles=text('xl/styles.xml', 8e6); if (!styles) return null;
     // theme colours, in the order Excel numbers them (light 1, dark 1, light 2, dark 2, accents 1–6, links)
     const theme=[]; const th=text('xl/theme/theme1.xml');
     if (th){ const sch=first(th,'a:clrScheme'); if (sch) for (const n of ['lt1','dk1','lt2','dk2','accent1','accent2','accent3','accent4','accent5','accent6','hlink','folHlink']){ const b=first(sch.inner,'a:'+n); let c=''; if (b){ const m=/<a:srgbClr[^>]*val="([0-9A-Fa-f]{6})"/.exec(b.inner) || /<a:sysClr[^>]*lastClr="([0-9A-Fa-f]{6})"/.exec(b.inner); c=m ? m[1].toUpperCase() : ''; } theme.push(c); } }
@@ -2805,7 +2812,7 @@ function readXlsxStyles(u8){
     const sheets={};
     for (const b of blocks(wbx,'sheet')){
       const name=unesc(attr(b.attrs,'name')||''), rid=attr(b.attrs,'r:id')||attr(b.attrs,'id'); const path=rid && target[rid]; if (!path) continue;
-      const xml=text(path); if (!xml) continue;
+      const xml=text(path, 80e6); if (!xml) continue;
       const cells=[], re=/<c\s([^>]*?)\/?>/g; let m;
       while ((m=re.exec(xml))){
         const sIdx=attr(m[1],'s'); if (!sIdx || sIdx==='0') continue;
@@ -2930,11 +2937,11 @@ function loadPrefs(){
 function copyData(){
   const multi=overviewData && overviewData.rows.length>1;
   const withKey=multi ? overviewData.rows.some(r=>r.res.mode==='key') : last.mode==='key';
-  const head=[...(multi?['工作表']:[]),'類型',...(withKey?[multi?'對應欄的值':last.info.keyName||'對應欄的值']:[]),'舊版 A 位置','新版 B 位置','欄位','舊的值','新的值'];
-  const blank={key:'',pa:'',pb:'',col:'',old:'',neu:''};
+  const head=[...(multi?['工作表']:[]),'類型',...(withKey?[multi?'對應欄的值':last.info.keyName||'對應欄的值']:[]),'舊版 A 位置','新版 B 位置','欄位','舊的值','新的值','說明'];
+  const blank={key:'',pa:'',pb:'',col:'',old:'',neu:'',why:''};
   const cells=(sheet,e)=>{
-    const r = e.t==='mod' ? charRuns(e.old,e.neu) : null;
-    return [...(multi?[sheet]:[]), e.type, ...(withKey?[e.key]:[]), e.pa, e.pb, e.col, r?{runs:r.old}:e.old, r?{runs:r.neu}:e.neu];
+    const r = e.html ? null : e.t==='mod' ? (e.runs || charRuns(e.old,e.neu)) : null; // formulas keep their part-level marks; formats are plain words
+    return [...(multi?[sheet]:[]), e.type, ...(withKey?[e.key]:[]), e.pa, e.pb, e.col, r?{runs:r.old}:e.old, r?{runs:r.neu}:e.neu, e.why||''];
   };
   const rows=[];
   if (multi){
@@ -3006,19 +3013,19 @@ function xSheet(rows, {headRow=-1, rowXf=()=>0, cellXf=()=>null, filter=false}={
 }
 function buildDiffWorkbook({head, rows}){
   const typeCol=head.indexOf('類型');
-  const typeXf=t=>/修改|改名|公式/.test(t) ? XF.mod : /新增/.test(t) ? XF.add : /刪除/.test(t) ? XF.del : null;
+  const typeXf=t=>/修改|改名|公式|格式|規則/.test(t) ? XF.mod : /新增/.test(t) ? XF.add : /刪除/.test(t) ? XF.del : null;
   const list=xSheet([head, ...rows], {headRow:0, rowXf:i=>i===0 ? XF.head : XF.plain, cellXf:(i,j)=> i>0 && j===typeCol ? typeXf(rows[i-1][j]) : null, filter:true});
   // summary sheet: the two files, when, and one line per compared sheet pair
   const when=new Date(), p=n=>String(n).padStart(2,'0');
   const stamp=`${when.getFullYear()}-${p(when.getMonth()+1)}-${p(when.getDate())} ${p(when.getHours())}:${p(when.getMinutes())}`;
-  const sumHead=['工作表（舊版 → 新版）','結果','改了幾格','新增列','刪除列','新增欄','刪除欄','改名欄','公式不同','列的對應方式'];
+  const sumHead=['工作表（舊版 → 新版）','結果','改了幾格','新增列','刪除列','新增欄','刪除欄','改名欄','公式不同','格式不同','列的對應方式'];
   const pairs=overviewData ? overviewData.rows : [{a:books.A.sheet, b:books.B.sheet, res:last}];
   const sumRows=pairs.map(r=>{
     const name = pairName(r);
-    if (r.a==null) return [name,'工作表新增','','','','','','','',''];
-    if (r.b==null) return [name,'工作表刪除','','','','','','','',''];
+    if (r.a==null) return [name,'工作表新增','','','','','','','','',''];
+    if (r.b==null) return [name,'工作表刪除','','','','','','','','',''];
     const s=r.res.st;
-    return [name, totalOf(s)?'有差異':'一樣', s.modCells, s.add, s.del, s.addCols, s.delCols, s.renCols||0, s.fCells||0, r.res.mode==='key' ? `依「${r.res.info.keyName}」對應` : '自動對齊'];
+    return [name, totalOf(s)?'有差異':'一樣', s.modCells, s.add, s.del, s.addCols, s.delCols, s.renCols||0, s.fCells||0, s.fmtCells||0, r.res.mode==='key' ? `依「${r.res.info.keyName}」對應` : '自動對齊'];
   });
   const info=[['Excel 差異比對結果'],['舊版檔案', books.A.name],['新版檔案', books.B.name],['匯出時間', stamp],[]];
   const summary=xSheet([...info, sumHead, ...sumRows], {headRow:info.length, rowXf:i=>i===0 ? XF.title : i===info.length ? XF.head : XF.plain,
